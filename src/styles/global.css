@@ -52,16 +52,11 @@ img {
   z-index: 20;
 }
 
-.site-header__inner {
-  width: 100%;
-  margin: 0;
-  padding: 0 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
-  min-height: 140px;
+.site-header__spacer {
+  display: inline-block;
+  min-width: 110px;
 }
+
 
 .site-logo {
   font-weight: 700;
@@ -1016,18 +1011,13 @@ img {
 }
 
 @media (max-width: 640px) {
-  .site-header__inner {
-  width: 100%;
-  margin: 0;
-  padding: 0 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
-  min-height: 140px;
+  .site-header__spacer {
+  display: inline-block;
+  min-width: 110px;
 }
 
-  .site-nav {
+
+.site-nav {
     width: 100%;
   }
 
@@ -2006,6 +1996,10 @@ img {
   transform: translateY(-1px);
   box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
 }
+
+
+
+
 
 
 

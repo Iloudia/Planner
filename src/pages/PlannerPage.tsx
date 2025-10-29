@@ -2,8 +2,9 @@
 import { useNavigate } from 'react-router-dom'
 import type { ChangeEvent } from 'react'
 import type { ScheduledTask } from '../data/sampleData'
-import { scheduledTasks } from '../data/sampleData'
 import { plannerCardRouteById, plannerCardRoutes } from '../data/plannerCardRoutes'
+import { useTasks } from '../context/TasksContext'
+import usePersistentState from '../hooks/usePersistentState'
 import planner01 from '../assets/planner-01.jpg'
 import planner02 from '../assets/planner-02.jpg'
 import planner03 from '../assets/planner-03.jpg'
@@ -65,6 +66,9 @@ const initialCards: DashboardCard[] = plannerCardRoutes.map((route, index) => ({
   path: route.path,
 }))
 
+const CARDS_STORAGE_KEY = 'planner.cards'
+const NOTES_STORAGE_KEY = 'planner.notes'
+
 const withAlpha = (hexColor: string, alpha: number) => {
   const parsed = hexColor.replace('#', '')
   const value = parseInt(parsed, 16)
@@ -74,16 +78,36 @@ const withAlpha = (hexColor: string, alpha: number) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
+const ensureNoteCount = (notes: string[], desiredLength: number) => {
+  if (notes.length === desiredLength) {
+    return notes
+  }
+  return Array.from({ length: desiredLength }, (_, index) => notes[index] ?? '')
+}
+
 const PlannerPage = () => {
   const navigate = useNavigate()
-  const [cards, setCards] = useState<DashboardCard[]>(initialCards)
-  const [notes, setNotes] = useState(() => Array.from({ length: 5 }, () => ''))
+  const { tasks } = useTasks()
+  const [cards, setCards] = usePersistentState<DashboardCard[]>(CARDS_STORAGE_KEY, () => initialCards)
+  const [notes, setNotes] = usePersistentState<string[]>(NOTES_STORAGE_KEY, () => Array.from({ length: 5 }, () => ''))
+  const [today, setToday] = useState(() => new Date())
 
   useEffect(() => {
     document.body.classList.add('planner-page--white')
     return () => {
       document.body.classList.remove('planner-page--white')
     }
+  }, [])
+
+  useEffect(() => {
+    setNotes((previous) => ensureNoteCount(previous, 5))
+  }, [setNotes])
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setToday(new Date())
+    }, 60000)
+    return () => window.clearInterval(intervalId)
   }, [])
 
   const todayLabel = useMemo(() => {
@@ -93,16 +117,16 @@ const PlannerPage = () => {
       month: 'long',
       year: 'numeric',
     })
-    const label = formatter.format(new Date())
+    const label = formatter.format(today)
     return label.charAt(0).toUpperCase() + label.slice(1)
-  }, [])
+  }, [today])
 
   const upcomingTaskGroups = useMemo(() => {
     const now = new Date()
     const capitalise = (value: string) =>
       value.length > 0 ? value.charAt(0).toUpperCase() + value.slice(1) : value
 
-    const tasksWithStart: UpcomingTask[] = scheduledTasks.map((task) => {
+    const tasksWithStart: UpcomingTask[] = tasks.map((task) => {
       const [year, month, day] = task.date.split('-').map(Number)
       const [hour, minute] = task.start.split(':').map(Number)
       const startDate = new Date(year, (month ?? 1) - 1, day ?? 1, hour ?? 0, minute ?? 0)
@@ -159,7 +183,7 @@ const PlannerPage = () => {
     })
 
     return Array.from(groups.values())
-  }, [])
+  }, [tasks])
 
   const handleNoteChange = (index: number) => (event: ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = event.target
@@ -197,7 +221,17 @@ const PlannerPage = () => {
   }
 
   const handleRemoveCard = (cardId: string) => {
-    setCards((previous) => previous.filter((card) => card.id !== cardId))
+    setCards((previous) => {
+      const target = previous.find((card) => card.id === cardId)
+      if (!target) {
+        return previous
+      }
+      const confirmation = window.confirm(`Supprimer la carte "${target.title}" ?`)
+      if (!confirmation) {
+        return previous
+      }
+      return previous.filter((card) => card.id !== cardId)
+    })
   }
 
   const handleAddCard = () => {

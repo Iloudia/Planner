@@ -1,5 +1,6 @@
 ﻿import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import usePersistentState from '../hooks/usePersistentState'
 
 type ActivityStatus = 'a-faire' | 'planifie' | 'fait'
 
@@ -26,12 +27,14 @@ const statusLabels: Record<ActivityStatus, string> = {
 
 const categoryPalette = ['#C7D2FE', '#FBCFE8', '#FDE68A', '#BBF7D0', '#FECACA']
 
+const defaultActivities: Activity[] = [
+  { id: 'act-1', title: 'Cours de poterie', category: 'Creativite', status: 'planifie', idealDate: '' },
+  { id: 'act-2', title: 'Randonnee au lever du soleil', category: 'Nature', status: 'a-faire', idealDate: '' },
+  { id: 'act-3', title: 'Atelier photo', category: 'Creativite', status: 'fait', idealDate: '' },
+]
+
 const ActivitiesPage = () => {
-  const [activities, setActivities] = useState<Activity[]>([
-    { id: 'act-1', title: 'Cours de poterie', category: 'Creativite', status: 'planifie', idealDate: '' },
-    { id: 'act-2', title: 'Randonnee au lever du soleil', category: 'Nature', status: 'a-faire', idealDate: '' },
-    { id: 'act-3', title: 'Atelier photo', category: 'Creativite', status: 'fait', idealDate: '' },
-  ])
+  const [activities, setActivities] = usePersistentState<Activity[]>('planner.activities', () => defaultActivities)
   const [draft, setDraft] = useState<ActivityDraft>({
     title: '',
     category: '',

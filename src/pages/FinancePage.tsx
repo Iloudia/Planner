@@ -1,5 +1,6 @@
 ﻿import type { FormEvent } from 'react'
 import { useMemo, useState } from 'react'
+import usePersistentState from '../hooks/usePersistentState'
 
 type ExpenseCategory =
   | 'food'
@@ -48,10 +49,10 @@ const getTodayISO = () => {
   return `${year}-${month}-${day}`
 }
 
-const initialExpenses: Expense[] = []
+const EXPENSES_STORAGE_KEY = 'planner.finance.expenses'
 
 const FinancePage = () => {
-  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses)
+  const [expenses, setExpenses] = usePersistentState<Expense[]>(EXPENSES_STORAGE_KEY, () => [])
   const [draft, setDraft] = useState<ExpenseDraft>(() => ({
     label: '',
     amount: '',

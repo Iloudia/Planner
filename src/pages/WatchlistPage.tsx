@@ -1,5 +1,6 @@
 ﻿import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import usePersistentState from '../hooks/usePersistentState'
 
 type WatchStatus = 'a-regarder' | 'en-cours' | 'termine'
 
@@ -19,12 +20,14 @@ const statusLabels: Record<WatchStatus, string> = {
 
 const typeOptions = ['Film', 'Serie', 'Documentaire', 'Video', 'Podcast']
 
+const defaultItems: WatchItem[] = [
+  { id: 'watch-1', title: 'The Creative Act', type: 'Documentaire', status: 'a-regarder', platform: 'YouTube' },
+  { id: 'watch-2', title: 'Only Murders', type: 'Serie', status: 'en-cours', platform: 'Disney+' },
+  { id: 'watch-3', title: 'Minimalism', type: 'Film', status: 'termine', platform: 'Netflix' },
+]
+
 const WatchlistPage = () => {
-  const [items, setItems] = useState<WatchItem[]>([
-    { id: 'watch-1', title: 'The Creative Act', type: 'Documentaire', status: 'a-regarder', platform: 'YouTube' },
-    { id: 'watch-2', title: 'Only Murders', type: 'Serie', status: 'en-cours', platform: 'Disney+' },
-    { id: 'watch-3', title: 'Minimalism', type: 'Film', status: 'termine', platform: 'Netflix' },
-  ])
+  const [items, setItems] = usePersistentState<WatchItem[]>('planner.watchlist', () => defaultItems)
   const [draft, setDraft] = useState({ title: '', type: 'Film', status: 'a-regarder' as WatchStatus, platform: '' })
 
   const listByStatus = useMemo(() => {

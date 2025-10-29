@@ -1,5 +1,6 @@
 ﻿import { useState } from 'react'
 import type { FormEvent } from 'react'
+import usePersistentState from '../hooks/usePersistentState'
 
 type Outing = {
   id: string
@@ -18,16 +19,18 @@ const getDefaultDate = () => {
   return `${year}-${month}-${day}`
 }
 
+const defaultOutings: Outing[] = [
+  {
+    id: 'out-1',
+    title: 'Brunch avec Clara',
+    location: 'Cafe pastel',
+    date: getDefaultDate(),
+    details: 'Penser a reserver une table pour 11h30',
+  },
+]
+
 const OutingsPage = () => {
-  const [outings, setOutings] = useState<Outing[]>([
-    {
-      id: 'out-1',
-      title: 'Brunch avec Clara',
-      location: 'Cafe pastel',
-      date: getDefaultDate(),
-      details: 'Penser a reserver une table pour 11h30',
-    },
-  ])
+  const [outings, setOutings] = usePersistentState<Outing[]>('planner.outings', () => defaultOutings)
   const [draft, setDraft] = useState({ title: '', location: '', date: getDefaultDate(), details: '' })
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -99,7 +102,7 @@ const OutingsPage = () => {
         </form>
       </section>
 
-      <section className="outings-list">
+  <section className="outings-list">
         <h2>Planning</h2>
         <ul>
           {outings.map((outing) => (

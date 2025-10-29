@@ -1,5 +1,6 @@
 ﻿import { useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
+import usePersistentState from '../hooks/usePersistentState'
 
 type JournalEntry = {
   id: string
@@ -16,20 +17,12 @@ const getTodayISO = () => {
   return `${year}-${month}-${day}`
 }
 
-const initialEntries: JournalEntry[] = [
-  {
-    id: 'journal-1',
-    date: getTodayISO(),
-    mood: 'Equilibree',
-    content:
-      'Je me sens confiante sur mes objectifs du jour. Priorite au mouvement et a un moment creatif.',
-  },
-]
+const initialEntries: JournalEntry[] = []
 
 const moods = ['Sereine', 'Energisee', 'Equilibree', 'Fatiguee', 'Fiere']
 
 const JournalingPage = () => {
-  const [entries, setEntries] = useState<JournalEntry[]>(initialEntries)
+  const [entries, setEntries] = usePersistentState<JournalEntry[]>('planner.journal.entries', () => initialEntries)
   const [draft, setDraft] = useState({
     date: getTodayISO(),
     mood: 'Equilibree',

@@ -1,7 +1,8 @@
 ﻿import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { getDateKey, scheduledTasks } from '../data/sampleData'
+import { getDateKey } from '../data/sampleData'
 import type { ScheduledTask } from '../data/sampleData'
+import { useTasks } from '../context/TasksContext'
 
 const weekDays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 const newTaskColors = ['#A5B4FC', '#7DD3FC', '#FBCFE8', '#BBF7D0', '#FDE68A']
@@ -25,7 +26,7 @@ const withAlpha = (hexColor: string, alpha: number) => {
 }
 
 const CalendarPage = () => {
-  const [tasks, setTasks] = useState<ScheduledTask[]>(scheduledTasks)
+  const { tasks, addTask, updateTask, removeTask } = useTasks()
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [editDraft, setEditDraft] = useState({
     start: '',
@@ -84,19 +85,21 @@ const CalendarPage = () => {
 
   const handleSubmitEdit = (event: FormEvent<HTMLFormElement>, taskId: string) => {
     event.preventDefault()
-    setTasks((previous) =>
-      previous.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              start: editDraft.start,
-              end: editDraft.end,
-              color: editDraft.color,
-            }
-          : task,
-      ),
-    )
+    updateTask(taskId, {
+      start: editDraft.start,
+      end: editDraft.end,
+      color: editDraft.color,
+    })
     setEditingTaskId(null)
+  }
+
+  const handleDeleteTask = (taskId: string) => {
+    const confirmation = window.confirm('Supprimer cette tache ?')
+    if (!confirmation) {
+      return
+    }
+    removeTask(taskId)
+    setEditingTaskId((previous) => (previous === taskId ? null : previous))
   }
 
   const handleAddTask = (dateKey: string) => {
@@ -109,7 +112,7 @@ const CalendarPage = () => {
     const end = window.prompt('Heure de fin (HH:MM)', '10:00') ?? '10:00'
     const color = newTaskColors[Math.floor(Math.random() * newTaskColors.length)] ?? '#A5B4FC'
 
-    const nextTask: ScheduledTask = {
+    addTask({
       id: `task-${Date.now()}`,
       title: title.trim(),
       start: start.trim().length > 0 ? start : '09:00',
@@ -117,9 +120,7 @@ const CalendarPage = () => {
       date: dateKey,
       color,
       tag: 'Perso',
-    }
-
-    setTasks((previous) => [...previous, nextTask])
+    })
   }
 
   const cells = useMemo(() => {
@@ -240,6 +241,13 @@ const CalendarPage = () => {
                           onClick={handleCancelEdit}
                         >
                           Annuler
+                        </button>
+                        <button
+                          type="button"
+                          className="calendar-task__button calendar-task__button--ghost"
+                          onClick={() => handleDeleteTask(task.id)}
+                        >
+                          Supprimer
                         </button>
                         <button type="submit" className="calendar-task__button calendar-task__button--primary">
                           Sauvegarder

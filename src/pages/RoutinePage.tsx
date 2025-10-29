@@ -1,24 +1,21 @@
-﻿import { useState } from 'react'
+﻿import { useMemo } from 'react'
 import { eveningRoutine, morningRoutine } from '../data/sampleData'
+import usePersistentState from '../hooks/usePersistentState'
 
 type RoutineId = string
 
-type RoutineState = {
-  completed: Set<RoutineId>
-}
+const COMPLETED_STORAGE_KEY = 'planner.routines.completed'
 
 const RoutinePage = () => {
-  const [state, setState] = useState<RoutineState>({ completed: new Set() })
+  const [completedIds, setCompletedIds] = usePersistentState<RoutineId[]>(COMPLETED_STORAGE_KEY, () => [])
+  const completedSet = useMemo(() => new Set<RoutineId>(completedIds), [completedIds])
 
   const toggleRoutine = (id: RoutineId) => {
-    setState((previous) => {
-      const nextCompleted = new Set(previous.completed)
-      if (nextCompleted.has(id)) {
-        nextCompleted.delete(id)
-      } else {
-        nextCompleted.add(id)
+    setCompletedIds((previous) => {
+      if (previous.includes(id)) {
+        return previous.filter((value) => value !== id)
       }
-      return { completed: nextCompleted }
+      return [...previous, id]
     })
   }
 
@@ -37,7 +34,7 @@ const RoutinePage = () => {
               <label>
                 <input
                   type="checkbox"
-                  checked={state.completed.has(item.id)}
+                  checked={completedSet.has(item.id)}
                   onChange={() => toggleRoutine(item.id)}
                 />
                 <span>{item.title}</span>
@@ -55,7 +52,7 @@ const RoutinePage = () => {
               <label>
                 <input
                   type="checkbox"
-                  checked={state.completed.has(item.id)}
+                  checked={completedSet.has(item.id)}
                   onChange={() => toggleRoutine(item.id)}
                 />
                 <span>{item.title}</span>
