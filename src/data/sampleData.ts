@@ -69,17 +69,43 @@ export const scheduledTasks: ScheduledTask[] = candidateDays.flatMap((day, index
 )
 
 export const morningRoutine: RoutineItem[] = [
-  { id: 'morning-1', title: 'Hydratation et respiration consciente (5 min)' },
-  { id: 'morning-2', title: 'Lecture rapide des objectifs du mois' },
-  { id: 'morning-3', title: 'Planification des 3 priorites du jour' },
-  { id: 'morning-4', title: 'Mouvement et stretching dynamique' },
+  { id: 'morning-visualiser', title: 'Visualiser ta journée idéale pendant 1 minute' },
+  { id: 'morning-lit', title: 'Faire mon lit' },
+  { id: 'morning-ranger-espace', title: 'Ranger mon espace' },
+  { id: 'morning-hydrate', title: 'Boire un grand verre d\'eau' },
+  { id: 'morning-respiration', title: 'Faire 5 minutes de respiration' },
+  { id: 'morning-gratitude', title: 'Écrire 3 choses positives ou de gratitude' },
+  { id: 'morning-affirmations-confiance', title: 'Répéter 3 affirmations pour la confiance en soi' },
+  { id: 'morning-affirmations-abondance', title: 'Répéter 3 affirmations pour attirer l\'abondance / l\'argent' },
+  { id: 'morning-miroir', title: 'Se regarder dans le miroir et se sourire' },
+  { id: 'morning-douche', title: 'Prendre une douche consciente (laisser partir les énergies lourdes)' },
+  { id: 'morning-habits', title: 'S\'habiller proprement, même si je restes chez moi' },
+  { id: 'morning-breakfast', title: 'Prendre un petit déjeuner nourrissant en pleine conscience' },
+  { id: 'morning-no-phone', title: 'Éviter le téléphone pendant la première heure' },
 ]
 
 export const eveningRoutine: RoutineItem[] = [
-  { id: 'evening-1', title: 'Deconnexion numerique 60 minutes avant le coucher' },
-  { id: 'evening-2', title: 'Revue des victoires et gratitude' },
-  { id: 'evening-3', title: 'Preparation de la tenue et du sac pour demain' },
-  { id: 'evening-4', title: 'Lecture legere ou meditation guidee' },
+  { id: 'evening-ranger', title: 'Ranger rapidement mon espace / bureau' },
+  { id: 'evening-lumiere', title: 'Tamiser la lumière ou allumer une bougie' },
+  { id: 'evening-phone', title: 'Poser mon téléphone (au moins 30 min avant de dormir)' },
+  { id: 'evening-hydrate', title: 'Boire un grand verre d\'eau' },
+  { id: 'evening-douche', title: 'Prendre une douche relaxante ou se laver le visage' },
+  { id: 'evening-soin', title: 'Faire ta petite routine soin (crème, cheveux, etc.)' },
+  {
+    id: 'evening-journal',
+    title: 'Écrire ta journée dans ton journal',
+    detail:
+      'Ce que tu as aimé ou réussi aujourd\'hui\nCe que tu veux libérer / laisser partir\nCe dont tu es reconnaissant(e)',
+  },
+  { id: 'evening-affirmations', title: 'Écrire 3 affirmations positives pour demain' },
+  { id: 'evening-visualiser', title: 'Visualiser ta vie idéale quelques minutes (imagine-toi déjà là)' },
+  { id: 'evening-meditation', title: 'Faire 5 minutes de respiration, méditation ou silence' },
+  { id: 'evening-lecture', title: 'Lire quelques pages d\'un livre inspirant (pas d\'écran)' },
+  {
+    id: 'evening-douceur',
+    title: 'Te dire une phrase douce avant de dormir',
+    detail: 'Exemple : "Je suis fier(e) de moi, je me rapproche chaque jour de mes rêves."',
+  },
 ]
 
 export const journalingPrompts = [

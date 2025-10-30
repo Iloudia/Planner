@@ -1,6 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import type { ChangeEvent } from 'react'
 import type { ScheduledTask } from '../data/sampleData'
 import { plannerCardRouteById, plannerCardRoutes } from '../data/plannerCardRoutes'
 import { useTasks } from '../context/TasksContext'
@@ -67,8 +66,6 @@ const initialCards: DashboardCard[] = plannerCardRoutes.map((route, index) => ({
 }))
 
 const CARDS_STORAGE_KEY = 'planner.cards'
-const NOTES_STORAGE_KEY = 'planner.notes'
-
 const withAlpha = (hexColor: string, alpha: number) => {
   const parsed = hexColor.replace('#', '')
   const value = parseInt(parsed, 16)
@@ -78,18 +75,10 @@ const withAlpha = (hexColor: string, alpha: number) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-const ensureNoteCount = (notes: string[], desiredLength: number) => {
-  if (notes.length === desiredLength) {
-    return notes
-  }
-  return Array.from({ length: desiredLength }, (_, index) => notes[index] ?? '')
-}
-
 const PlannerPage = () => {
   const navigate = useNavigate()
   const { tasks } = useTasks()
   const [cards, setCards] = usePersistentState<DashboardCard[]>(CARDS_STORAGE_KEY, () => initialCards)
-  const [notes, setNotes] = usePersistentState<string[]>(NOTES_STORAGE_KEY, () => Array.from({ length: 5 }, () => ''))
   const [today, setToday] = useState(() => new Date())
 
   useEffect(() => {
@@ -98,10 +87,6 @@ const PlannerPage = () => {
       document.body.classList.remove('planner-page--white')
     }
   }, [])
-
-  useEffect(() => {
-    setNotes((previous) => ensureNoteCount(previous, 5))
-  }, [setNotes])
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -185,11 +170,6 @@ const PlannerPage = () => {
     return Array.from(groups.values())
   }, [tasks])
 
-  const handleNoteChange = (index: number) => (event: ChangeEvent<HTMLTextAreaElement>) => {
-    const { value } = event.target
-    setNotes((previous) => previous.map((note, position) => (position === index ? value : note)))
-  }
-
   const handleCardClick = (card: DashboardCard) => {
     const path = card.path ?? plannerCardRouteById[card.id]
     if (path) {
@@ -254,22 +234,15 @@ const PlannerPage = () => {
 
   return (
     <div className="planner-page dashboard-page">
+      <div className="planner-page__breadcrumb">home</div>
+      <div className="planner-page__accent-bar" aria-hidden="true" />
       <section className="dashboard-content">
         <div className="dashboard-column dashboard-column--left">
           <div className="dashboard-profile-card dashboard-panel">
             <img className="dashboard-profile-card__image" src={profileImage} alt="Moodboard quotidien" />
-            <span className="dashboard-profile-card__divider" />
-            <div className="dashboard-profile-card__notes">
-              {notes.map((note, index) => (
-                <textarea
-                  key={index}
-                  value={note}
-                  onChange={handleNoteChange(index)}
-                  placeholder={`Phrase ${index + 1}`}
-                  aria-label={`Note objectif ${index + 1}`}
-                />
-              ))}
-            </div>
+            <button type="button" className="dashboard-add-card" onClick={handleAddCard}>
+              Ajouter une carte
+            </button>
           </div>
         </div>
 
@@ -278,16 +251,7 @@ const PlannerPage = () => {
             <span>Aujourd'hui</span>
             <time>{todayLabel}</time>
           </div>
-          <div className="dashboard-card-controls">
-            <button
-              type="button"
-              className="dashboard-card-add"
-              onClick={handleAddCard}
-              aria-label="Ajouter une nouvelle carte"
-            >
-              +
-            </button>
-          </div>
+          <div className="dashboard-space-title">Mon espace d&rsquo;&eacute;quilibre</div>
           <div className="dashboard-card-grid">
             {cards.map((card) => (
               <button
@@ -379,6 +343,7 @@ const PlannerPage = () => {
           </div>
         </aside>
       </section>
+      <div className="planner-page__footer-bar" aria-hidden="true" />
     </div>
   )
 }

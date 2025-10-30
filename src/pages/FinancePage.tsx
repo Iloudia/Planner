@@ -1,6 +1,9 @@
 import type { FormEvent } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import usePersistentState from '../hooks/usePersistentState'
+import financeMood01 from '../assets/planner-04.jpg'
+import financeMood02 from '../assets/planner-07.jpg'
+import financeMood03 from '../assets/planner-02.jpg'
 
 type ExpenseCategory =
   | 'food'
@@ -60,6 +63,12 @@ const categoryDefinitions: Record<ExpenseCategory, { label: string; color: strin
   health: { label: 'Taxes et impots', color: '#BFDBFE' },
   friends: { label: 'Amis', color: '#FCA5A5' },
 }
+
+const financeMoodboard = [
+  { src: financeMood01, alt: 'Moodboard budget pastel' },
+  { src: financeMood02, alt: 'Carnet d\'epargne inspire' },
+  { src: financeMood03, alt: 'Planification creative' },
+] as const
 
 const euroFormatter = new Intl.NumberFormat('fr-FR', {
   style: 'currency',
@@ -172,6 +181,13 @@ const FinancePage = () => {
     direction: 'out',
   }))
   const [showFullHistory, setShowFullHistory] = useState(false)
+
+  useEffect(() => {
+    document.body.classList.add('planner-page--white')
+    return () => {
+      document.body.classList.remove('planner-page--white')
+    }
+  }, [])
 
   const entries = useMemo<FinanceEntry[]>(
     () =>
@@ -369,7 +385,7 @@ const FinancePage = () => {
     const trimmedLabel = draft.label.trim()
     const nextEntry: StoredFinanceEntry = {
       id: `finance-${Date.now()}`,
-      label: trimmedLabel.length > 0 ? trimmedLabel : draft.direction === 'in' ? 'Revenus' : 'Dépense',
+      label: trimmedLabel.length > 0 ? trimmedLabel : draft.direction === 'in' ? 'Revenus' : 'Depense',
       amount: roundCurrency(amountValue),
       date: draft.date,
       direction: draft.direction,
@@ -417,16 +433,35 @@ const FinancePage = () => {
   }
 
   return (
-    <div className="finance-page">
-      <header className="finance-header">
-        <div>
-          <h1>Tableau finances</h1>
-          <p>Observe tes depenses et garde le cap sur ton plan d'epargne.</p>
-          <div className="finance-header__period">
-            <span className="finance-header__month">{selectedMonthLabel}</span>
+    <div className="finance-page aesthetic-page">
+      <div className="finance-page__breadcrumb">finances</div>
+      <div className="finance-page__accent-bar" aria-hidden="true" />
+
+      <section className="finance-hero dashboard-panel">
+        <div className="finance-hero__content">
+          <span className="finance-hero__eyebrow">tableau finances</span>
+          <h1>Mon panorama budget pastel</h1>
+
+          <div className="finance-hero__stats">
+            <article>
+              <span>Total depenses du mois</span>
+              <strong>{euroFormatter.format(totalSpent)}</strong>
+            </article>
+            <article>
+              <span>Variation nette</span>
+              <strong>{formatSignedCurrency(netCashflow)}</strong>
+            </article>
+            <article>
+              <span>Economies</span>
+              <strong>{formatSignedCurrency(savedAmount)}</strong>
+            </article>
+          </div>
+
+          <div className="finance-hero__period">
+            <span className="finance-hero__badge">{selectedMonthLabel}</span>
             {monthOptions.length > 0 && (
               <select
-                className="finance-header__month-select"
+                className="finance-hero__select"
                 value={selectedMonthKey}
                 onChange={(event) => setSelectedMonthKey(event.target.value)}
               >
@@ -439,169 +474,201 @@ const FinancePage = () => {
             )}
           </div>
         </div>
-        <div className="finance-total">
-          <span>Total dépenses du mois</span>
-          <strong>{euroFormatter.format(totalSpent)}</strong>
-        </div>
-      </header>
 
-      <section className="finance-summary">
-        <h2>Repartition par categorie</h2>
-        <div className="finance-summary__grid">
-          {Object.entries(totals).map(([categoryKey, amount]) => {
-            const definition = categoryDefinitions[categoryKey as ExpenseCategory]
-            return (
-              <article key={categoryKey} className="finance-summary__card" style={{ borderColor: definition.color }}>
-                <span className="finance-summary__label">{definition.label}</span>
-                <strong className="finance-summary__value">{euroFormatter.format(amount)}</strong>
-              </article>
-            )
-          })}
+        <div className="finance-hero__gallery" aria-hidden="true">
+          {financeMoodboard.map((image, index) => (
+            <div key={image.src} className={`finance-hero__photo finance-hero__photo--${index + 1}`}>
+              <img src={image.src} alt={image.alt} />
+            </div>
+          ))}
         </div>
       </section>
 
-      {savingsIdea && (
-        <section className="finance-tip">
-          <h2>Astuce epargne</h2>
-          <p>
-            En visant {euroFormatter.format(savingsIdea.target)} pour {savingsIdea.label}, tu economises{' '}
-            {euroFormatter.format(savingsIdea.current - savingsIdea.target)} ce mois-ci.
-          </p>
-        </section>
-      )}
-
-      <section className="finance-form">
-        <h2>Ajouter une depense</h2>
-        <form onSubmit={handleSubmit} className="finance-form__grid">
-          <label className="finance-form__field">
-            <span>Intitule</span>
-            <input
-              type="text"
-              value={draft.label}
-              onChange={(event) => handleDraftChange('label', event.target.value)}
-              placeholder="Ex: Courses semaine"
-            />
-          </label>
-          <label className="finance-form__field">
-            <span>Montant</span>
-            <input
-              type="text"
-              value={draft.amount}
-              onChange={(event) => handleDraftChange('amount', event.target.value)}
-              placeholder="Ex: 45.90"
-              required
-            />
-          </label>
-          <label className="finance-form__field">
-            <span>Type</span>
-            <select
-              value={draft.direction}
-              onChange={(event) => handleDraftChange('direction', event.target.value as FlowDirection)}
-            >
-              <option value="out">Dépense</option>
-              <option value="in">Revenus</option>
-            </select>
-          </label>
-          {draft.direction === 'out' && (
-            <label className="finance-form__field">
-              <span>Categorie</span>
-              <select
-                value={draft.category}
-                onChange={(event) => handleDraftChange('category', event.target.value as ExpenseCategory)}
-              >
-                {Object.entries(categoryDefinitions).map(([value, definition]) => (
-                  <option key={value} value={value}>
-                    {definition.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          <label className="finance-form__field">
-            <span>Date</span>
-            <input
-              type="date"
-              value={draft.date}
-              onChange={(event) => handleDraftChange('date', event.target.value)}
-              required
-            />
-          </label>
-          <button type="submit" className="finance-form__submit">
-            Ajouter
-          </button>
-        </form>
-      </section>
-
-      <section className="finance-balance">
-        <div className="finance-balance__header">
-          <h2>Suivi du mois</h2>
-          <p>Configure ton montant initial pour suivre au plus pres tes mouvements.</p>
-        </div>
-        <form className="finance-balance__form" onSubmit={handleStartingAmountSubmit}>
-          <label className="finance-balance__field">
-            <span>Argent au debut du mois</span>
-            <input
-              type="text"
-              value={startingAmountDraft}
-              onChange={(event) => setStartingAmountDraft(event.target.value)}
-              placeholder="Ex: 1200"
-            />
-          </label>
-          <button type="submit" className="finance-balance__action">
-            Enregistrer
-          </button>
-        </form>
-        <div className="finance-balance__stats">
-          <article className="finance-balance__stat">
-            <span>Argent au debut</span>
-            <strong>{euroFormatter.format(startingAmountValue)}</strong>
-          </article>
-          <article className="finance-balance__stat">
-            <span>Revenus</span>
-            <strong>{formatSignedCurrency(totalIncome)}</strong>
-          </article>
-          <article className="finance-balance__stat">
-            <span>Dépenses</span>
-            <strong>{formatSignedCurrency(-totalSpent)}</strong>
-          </article>
-          <article className="finance-balance__stat">
-            <span>Argent a la fin</span>
-            <strong>{euroFormatter.format(endingAmount)}</strong>
-            <small>
-              Economies: {formatSignedCurrency(savedAmount)} ({formatSignedPercentage(savingsPercentage)})
-            </small>
-          </article>
-        </div>
-        <div className="finance-balance__charts">
-          <div className="finance-balance__chart-card">
-            <h3>Diagramme en fromage</h3>
-            {hasPieData ? (
-              <div className="finance-pie">
-                <div className="finance-pie__figure" style={{ backgroundImage: pieBackground }} />
-                <ul className="finance-pie__legend">
-                  {pieSegments.map((segment) => (
-                    <li key={segment.label}>
-                      <span className="finance-pie__swatch" style={{ backgroundColor: segment.color }} />
-                      <span className="finance-pie__label">{segment.label}</span>
-                      <span className="finance-pie__value">{euroFormatter.format(segment.value)}</span>
-                    </li>
-                  ))}
-                </ul>
+      <section className="finance-dashboard">
+        <div className="finance-dashboard__main">
+          <section className="finance-summary dashboard-panel">
+            <header className="finance-section-header">
+              <span className="finance-section-header__eyebrow">couleurs de depenses</span>
+              <div>
+                <h2>Repartition par categorie</h2>
+                <p>Visualise ou part ton energie financiere avec une palette ultra douce.</p>
               </div>
-            ) : (
-              <p className="finance-balance__empty">Ajoute une depense pour visualiser la repartition.</p>
-            )}
-          </div>
-          <div className="finance-balance__chart-card">
-            <h3>Diagramme en tube</h3>
-            <BalanceBarChart start={startingAmountValue} end={endingAmount} />
-            <p className="finance-bars__caption">Variation nette: {formatSignedCurrency(netCashflow)}</p>
-          </div>
+            </header>
+            <div className="finance-summary__grid">
+              {Object.entries(totals).map(([categoryKey, amount]) => {
+                const definition = categoryDefinitions[categoryKey as ExpenseCategory]
+                return (
+                  <article
+                    key={categoryKey}
+                    className="finance-summary__card"
+                    style={{ borderColor: definition.color, boxShadow: `0 32px 60px ${definition.color}33` }}
+                  >
+                    <span className="finance-summary__label">{definition.label}</span>
+                    <strong className="finance-summary__value">{euroFormatter.format(amount)}</strong>
+                  </article>
+                )
+              })}
+            </div>
+          </section>
+
+          {savingsIdea && (
+            <section className="finance-tip dashboard-panel">
+              <header className="finance-section-header">
+                <span className="finance-section-header__eyebrow">idee douceur</span>
+                <h2>Astuce epargne</h2>
+              </header>
+              <p>
+                En visant {euroFormatter.format(savingsIdea.target)} pour {savingsIdea.label}, tu economises{' '}
+                {euroFormatter.format(savingsIdea.current - savingsIdea.target)} ce mois-ci.
+              </p>
+            </section>
+          )}
+
+          <section className="finance-form dashboard-panel">
+            <header className="finance-section-header">
+              <span className="finance-section-header__eyebrow">ajoute ton mouvement</span>
+              <h2>Ajouter une depense</h2>
+            </header>
+            <form onSubmit={handleSubmit} className="finance-form__grid">
+              <label className="finance-form__field">
+                <span>Intitule</span>
+                <input
+                  type="text"
+                  value={draft.label}
+                  onChange={(event) => handleDraftChange('label', event.target.value)}
+                  placeholder="Ex: Courses semaine"
+                />
+              </label>
+              <label className="finance-form__field">
+                <span>Montant</span>
+                <input
+                  type="text"
+                  value={draft.amount}
+                  onChange={(event) => handleDraftChange('amount', event.target.value)}
+                  placeholder="Ex: 45.90"
+                  required
+                />
+              </label>
+              <label className="finance-form__field">
+                <span>Type</span>
+                <select
+                  value={draft.direction}
+                  onChange={(event) => handleDraftChange('direction', event.target.value as FlowDirection)}
+                >
+                  <option value="out">Depense</option>
+                  <option value="in">Revenus</option>
+                </select>
+              </label>
+              {draft.direction === 'out' && (
+                <label className="finance-form__field">
+                  <span>Categorie</span>
+                  <select
+                    value={draft.category}
+                    onChange={(event) => handleDraftChange('category', event.target.value as ExpenseCategory)}
+                  >
+                    {Object.entries(categoryDefinitions).map(([value, definition]) => (
+                      <option key={value} value={value}>
+                        {definition.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              <label className="finance-form__field">
+                <span>Date</span>
+                <input
+                  type="date"
+                  value={draft.date}
+                  onChange={(event) => handleDraftChange('date', event.target.value)}
+                  required
+                />
+              </label>
+              <button type="submit" className="finance-form__submit">
+                Ajouter
+              </button>
+            </form>
+          </section>
         </div>
+
+        <aside className="finance-dashboard__aside">
+          <section className="finance-balance dashboard-panel">
+            <header className="finance-section-header finance-section-header--vertical">
+              <span className="finance-section-header__eyebrow">suivi du mois</span>
+              <div>
+                <h2>Balance du mois</h2>
+                <p>Configure ton montant initial pour suivre au plus pres tes mouvements.</p>
+              </div>
+            </header>
+            <form className="finance-balance__form" onSubmit={handleStartingAmountSubmit}>
+              <label className="finance-balance__field">
+                <span>Argent au debut du mois</span>
+                <input
+                  type="text"
+                  value={startingAmountDraft}
+                  onChange={(event) => setStartingAmountDraft(event.target.value)}
+                  placeholder="Ex: 1200"
+                />
+              </label>
+              <button type="submit" className="finance-balance__action">
+                Enregistrer
+              </button>
+            </form>
+            <div className="finance-balance__stats">
+              <article className="finance-balance__stat">
+                <span>Argent au debut</span>
+                <strong>{euroFormatter.format(startingAmountValue)}</strong>
+              </article>
+              <article className="finance-balance__stat">
+                <span>Revenus</span>
+                <strong>{formatSignedCurrency(totalIncome)}</strong>
+              </article>
+              <article className="finance-balance__stat">
+                <span>Depenses</span>
+                <strong>{formatSignedCurrency(-totalSpent)}</strong>
+              </article>
+              <article className="finance-balance__stat">
+                <span>Argent a la fin</span>
+                <strong>{euroFormatter.format(endingAmount)}</strong>
+                <small>
+                  Economies: {formatSignedCurrency(savedAmount)} ({formatSignedPercentage(savingsPercentage)})
+                </small>
+              </article>
+            </div>
+            <div className="finance-balance__charts">
+              <div className="finance-balance__chart-card">
+                <h3>Diagramme en fromage</h3>
+                {hasPieData ? (
+                  <div className="finance-pie">
+                    <div className="finance-pie__figure" style={{ backgroundImage: pieBackground }} />
+                    <ul className="finance-pie__legend">
+                      {pieSegments.map((segment) => (
+                        <li key={segment.label}>
+                          <span className="finance-pie__swatch" style={{ backgroundColor: segment.color }} />
+                          <span className="finance-pie__label">{segment.label}</span>
+                          <span className="finance-pie__value">{euroFormatter.format(segment.value)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <p className="finance-balance__empty">Ajoute une depense pour visualiser la repartition.</p>
+                )}
+              </div>
+              <div className="finance-balance__chart-card">
+                <h3>Diagramme en tube</h3>
+                <BalanceBarChart start={startingAmountValue} end={endingAmount} />
+                <p className="finance-bars__caption">Variation nette: {formatSignedCurrency(netCashflow)}</p>
+              </div>
+            </div>
+          </section>
+        </aside>
       </section>
 
-      <section className="finance-history">
-        <h2>Historique du mois</h2>
+      <section className="finance-history dashboard-panel">
+        <header className="finance-section-header">
+          <span className="finance-section-header__eyebrow">memoire du mois</span>
+          <h2>Historique du mois</h2>
+        </header>
         {selectedMonthEntries.length === 0 ? (
           <p className="finance-history__empty">Aucun mouvement enregistre pour {selectedMonthLabel}.</p>
         ) : (
@@ -611,7 +678,7 @@ const FinancePage = () => {
                 const definition = entry.category ? categoryDefinitions[entry.category] : undefined
                 const amountValue = entry.direction === 'out' ? -entry.amount : entry.amount
                 const amountColor = entry.direction === 'in' ? '#16a34a' : definition?.color ?? '#1e1b4b'
-                const categoryLabel = entry.direction === 'in' ? 'Revenus' : definition?.label ?? 'Dépense'
+                const categoryLabel = entry.direction === 'in' ? 'Revenus' : definition?.label ?? 'Depense'
                 return (
                   <li key={entry.id} className="finance-history__item">
                     <div className="finance-history__meta">
@@ -638,6 +705,8 @@ const FinancePage = () => {
           </>
         )}
       </section>
+
+      <div className="finance-page__footer-bar" aria-hidden="true" />
     </div>
   )
 }
@@ -680,3 +749,6 @@ const BalanceBarChart = ({ start, end }: BalanceBarChartProps) => {
 }
 
 export default FinancePage
+
+
+

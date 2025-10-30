@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <defs>
+    <linearGradient id="night-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C7CEFF" />
+      <stop offset="100%" stop-color="#A5B4FC" />
+    </linearGradient>
+    <radialGradient id="moonlight" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#E8E7FF" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#B3B9FF" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect x="8" y="8" width="144" height="144" rx="44" fill="#F4F5FF" />
+  <ellipse cx="88" cy="80" rx="68" ry="64" fill="url(#moonlight)" />
+  <path
+    d="M112 82a44 44 0 1 1-44-44 32 32 0 0 0 44 44z"
+    fill="url(#night-gradient)"
+  />
+  <g fill="#FDF6FD">
+    <circle cx="44" cy="44" r="4" />
+    <circle cx="60" cy="120" r="5" />
+    <circle cx="116" cy="52" r="3.5" />
+    <circle cx="96" cy="116" r="3" />
+    <circle cx="42" cy="88" r="2.5" />
+    <circle cx="126" cy="102" r="4.5" />
+  </g>
+</svg>

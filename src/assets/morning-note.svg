@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <defs>
+    <linearGradient id="sunrise-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE3A8" />
+      <stop offset="100%" stop-color="#FFB0C7" />
+    </linearGradient>
+    <radialGradient id="sunrise-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF3D6" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#FFE5B9" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect x="8" y="8" width="144" height="144" rx="44" fill="#FFF9F2" />
+  <circle cx="80" cy="88" r="54" fill="url(#sunrise-glow)" />
+  <circle cx="80" cy="80" r="36" fill="url(#sunrise-gradient)" />
+  <g stroke="#FFD9A0" stroke-width="6" stroke-linecap="round">
+    <line x1="80" y1="22" x2="80" y2="40" />
+    <line x1="80" y1="120" x2="80" y2="138" />
+    <line x1="22" y1="80" x2="40" y2="80" />
+    <line x1="120" y1="80" x2="138" y2="80" />
+    <line x1="36" y1="36" x2="48" y2="48" />
+    <line x1="124" y1="124" x2="112" y2="112" />
+    <line x1="36" y1="124" x2="48" y2="112" />
+    <line x1="124" y1="36" x2="112" y2="48" />
+  </g>
+</svg>
