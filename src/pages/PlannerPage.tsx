@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { ScheduledTask } from '../data/sampleData'
 import { plannerCardRouteById, plannerCardRoutes } from '../data/plannerCardRoutes'
@@ -64,6 +64,8 @@ const initialCards: DashboardCard[] = plannerCardRoutes.map((route, index) => ({
   image: fallbackImages[index % fallbackImages.length] ?? fallbackImages[0],
   path: route.path,
 }))
+
+const visionBoardImage = plannerImages[0]
 
 const CARDS_STORAGE_KEY = 'planner.cards'
 const withAlpha = (hexColor: string, alpha: number) => {
@@ -186,12 +188,12 @@ const PlannerPage = () => {
         return previous
       }
 
-      const nextTitle = window.prompt('Nouveau titre pour la carte ?', target.title)
+      const nextTitle = window.prompt('Nouveau titre pour la carte\u00a0?', target.title)
       if (!nextTitle || nextTitle.trim().length === 0) {
         return previous
       }
 
-      const nextImage = window.prompt('URL de la nouvelle image (vide pour garder actuelle)', target.image)
+      const nextImage = window.prompt('URL de la nouvelle image (laisser vide pour conserver l\u2019actuelle)', target.image)
       const trimmedImage = nextImage && nextImage.trim().length > 0 ? nextImage.trim() : target.image
 
       return previous.map((item) =>
@@ -215,12 +217,12 @@ const PlannerPage = () => {
   }
 
   const handleAddCard = () => {
-    const title = window.prompt('Titre pour la nouvelle carte ?')
+    const title = window.prompt('Titre pour la nouvelle carte\u00a0?')
     if (!title || title.trim().length === 0) {
       return
     }
 
-    const imageInput = window.prompt("URL de l'image (vide pour visuel par defaut)")
+    const imageInput = window.prompt("URL de l'image (laisser vide pour utiliser le visuel par d\u00e9faut)")
     const fallbackImage = fallbackImages[(cards.length + 1) % fallbackImages.length] ?? fallbackImages[0]
 
     const nextCard: DashboardCard = {
@@ -234,7 +236,7 @@ const PlannerPage = () => {
 
   return (
     <div className="planner-page dashboard-page">
-      <div className="planner-page__breadcrumb">home</div>
+      <div className="planner-page__breadcrumb">Accueil</div>
       <div className="planner-page__accent-bar" aria-hidden="true" />
       <section className="dashboard-content">
         <div className="dashboard-column dashboard-column--left">
@@ -301,14 +303,14 @@ const PlannerPage = () => {
         <aside className="dashboard-column dashboard-column--right">
           <div className="dashboard-upcoming dashboard-panel">
             <div className="dashboard-upcoming__header">
-              <span className="dashboard-upcoming__title">Prochaines taches</span>
+              <span className="dashboard-upcoming__title">Prochaines t&acirc;ches</span>
               <span className="dashboard-upcoming__subtitle">
                 Ton prochain focus, tout en douceur pastel.
               </span>
             </div>
             {upcomingTaskGroups.length === 0 ? (
               <div className="dashboard-upcoming__empty">
-                <span>Aucune echeance a venir. Profite de ce calme.</span>
+                <span>Aucune &eacute;ch&eacute;ance &agrave; venir. Profite de ce calme.</span>
               </div>
             ) : (
               upcomingTaskGroups.map((group) => (
@@ -344,6 +346,18 @@ const PlannerPage = () => {
         </aside>
       </section>
       <div className="planner-page__footer-bar" aria-hidden="true" />
+      <section className="vision-board" aria-labelledby="vision-board-title">
+        <div className="vision-board__header">
+          <h2 id="vision-board-title">Ta vision board</h2>
+          <p>
+            Un espace dédié pour afficher ta vision en grand format. Remplace simplement l’image par
+            ta planche d’inspiration préférée.
+          </p>
+        </div>
+        <div className="vision-board__canvas">
+          <img src={visionBoardImage} alt="Vision board principale" />
+        </div>
+      </section>
     </div>
   )
 }
