@@ -1,15 +1,17 @@
-﻿import { Link, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, Route, Routes, useLocation } from 'react-router-dom'
 import CalendarPage from './pages/CalendarPage'
 import ActivitiesPage from './pages/ActivitiesPage'
 import FinancePage from './pages/FinancePage'
 import JournalingPage from './pages/JournalingPage'
 import MonthlyReviewPage from './pages/MonthlyReviewPage'
-import OutingsPage from './pages/OutingsPage'
+import WishlistPage from './pages/WishlistPage'
 import RoutinePage from './pages/RoutinePage'
 import TherapyPage from './pages/TherapyPage'
 import WatchlistPage from './pages/WatchlistPage'
 import PlannerPage from './pages/PlannerPage'
+import SelfLovePage from './pages/SelfLovePage'
 import BackButton from './components/BackButton'
+import logo1 from './assets/Logo1.png'
 import { TasksProvider } from './context/TasksContext'
 
 const App = () => {
@@ -21,10 +23,13 @@ const App = () => {
       <div className="app-shell">
         <header className="site-header">
           <div className="site-header__inner">
-            {showBackButton ? <BackButton /> : <span className="site-header__spacer" />}
-            <Link to="/" className="site-logo">
-              Planner
-            </Link>
+            <div className="site-header__brand">
+              <Link to="/" className="site-logo">
+                <img src={logo1} alt="Logo Planner" />
+                <span>Planner</span>
+              </Link>
+              {showBackButton ? <BackButton /> : null}
+            </div>
           </div>
         </header>
 
@@ -39,8 +44,10 @@ const App = () => {
             <Route path="/routine" element={<RoutinePage />} />
             <Route path="/revue-du-mois" element={<MonthlyReviewPage />} />
             <Route path="/choses-a-regarder" element={<WatchlistPage />} />
-            <Route path="/sorties" element={<OutingsPage />} />
+            <Route path="/wishlist" element={<WishlistPage />} />
+            <Route path="/sorties" element={<WishlistPage />} />
             <Route path="/therapie" element={<TherapyPage />} />
+            <Route path="/self-love" element={<SelfLovePage />} />
           </Routes>
         </main>
 
@@ -53,4 +60,5 @@ const App = () => {
 }
 
 export default App
+
 

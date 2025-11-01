@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { ScheduledTask } from '../data/sampleData'
 import { plannerCardRouteById, plannerCardRoutes } from '../data/plannerCardRoutes'
@@ -14,6 +14,7 @@ import planner07 from '../assets/planner-07.jpg'
 import planner08 from '../assets/planner-08.jpg'
 import planner09 from '../assets/planner-09.jpg'
 import planner10 from '../assets/planner-10.jpg'
+import visionBoardMood from '../assets/MoodBoard.png'
 
 type DashboardCard = {
   id: string
@@ -65,9 +66,34 @@ const initialCards: DashboardCard[] = plannerCardRoutes.map((route, index) => ({
   path: route.path,
 }))
 
-const visionBoardImage = plannerImages[0]
+const visionBoardImage = visionBoardMood
 
 const CARDS_STORAGE_KEY = 'planner.cards'
+
+type CardMigration = {
+  title?: {
+    from: string[]
+    to: string
+  }
+  path?: {
+    from: string[]
+    to: string
+  }
+}
+
+const CARD_MIGRATIONS: Record<string, CardMigration> = {
+  'card-8': {
+    title: {
+      from: ['Sorties'],
+      to: 'Wishlist',
+    },
+    path: {
+      from: ['/sorties'],
+      to: '/wishlist',
+    },
+  },
+}
+
 const withAlpha = (hexColor: string, alpha: number) => {
   const parsed = hexColor.replace('#', '')
   const value = parseInt(parsed, 16)
@@ -82,6 +108,61 @@ const PlannerPage = () => {
   const { tasks } = useTasks()
   const [cards, setCards] = usePersistentState<DashboardCard[]>(CARDS_STORAGE_KEY, () => initialCards)
   const [today, setToday] = useState(() => new Date())
+
+  useEffect(() => {
+    setCards((previous) => {
+      let didChange = false
+
+      const next = previous.map((card) => {
+        const migration = CARD_MIGRATIONS[card.id]
+        if (!migration) {
+          return card
+        }
+
+        let nextCard = card
+        let changedCard = false
+
+        if (
+          migration.title &&
+          migration.title.from.includes(card.title) &&
+          card.title !== migration.title.to
+        ) {
+          nextCard = { ...nextCard, title: migration.title.to }
+          changedCard = true
+        }
+
+        if (
+          migration.path &&
+          card.path &&
+          migration.path.from.includes(card.path) &&
+          card.path !== migration.path.to
+        ) {
+          nextCard = { ...nextCard, path: migration.path.to }
+          changedCard = true
+        }
+
+        if (changedCard) {
+          didChange = true
+          return nextCard
+        }
+
+        return card
+      })
+
+      return didChange ? next : previous
+    })
+  }, [setCards])
+
+  useEffect(() => {
+    setCards((previous) => {
+      const existingIds = new Set(previous.map((card) => card.id))
+      const missing = initialCards.filter((card) => !existingIds.has(card.id))
+      if (missing.length === 0) {
+        return previous
+      }
+      return [...previous, ...missing]
+    })
+  }, [setCards])
 
   useEffect(() => {
     document.body.classList.add('planner-page--white')
@@ -188,12 +269,12 @@ const PlannerPage = () => {
         return previous
       }
 
-      const nextTitle = window.prompt('Nouveau titre pour la carte\u00a0?', target.title)
+      const nextTitle = window.prompt('Nouveau titre pour la carte ?', target.title)
       if (!nextTitle || nextTitle.trim().length === 0) {
         return previous
       }
 
-      const nextImage = window.prompt('URL de la nouvelle image (laisser vide pour conserver l\u2019actuelle)', target.image)
+      const nextImage = window.prompt('URL de la nouvelle image (vide pour garder actuelle)', target.image)
       const trimmedImage = nextImage && nextImage.trim().length > 0 ? nextImage.trim() : target.image
 
       return previous.map((item) =>
@@ -216,35 +297,14 @@ const PlannerPage = () => {
     })
   }
 
-  const handleAddCard = () => {
-    const title = window.prompt('Titre pour la nouvelle carte\u00a0?')
-    if (!title || title.trim().length === 0) {
-      return
-    }
-
-    const imageInput = window.prompt("URL de l'image (laisser vide pour utiliser le visuel par d\u00e9faut)")
-    const fallbackImage = fallbackImages[(cards.length + 1) % fallbackImages.length] ?? fallbackImages[0]
-
-    const nextCard: DashboardCard = {
-      id: `card-${Date.now()}`,
-      title: title.trim(),
-      image: imageInput && imageInput.trim().length > 0 ? imageInput.trim() : fallbackImage,
-    }
-
-    setCards((previous) => [...previous, nextCard])
-  }
-
   return (
     <div className="planner-page dashboard-page">
-      <div className="planner-page__breadcrumb">Accueil</div>
+      <div className="planner-page__breadcrumb">home</div>
       <div className="planner-page__accent-bar" aria-hidden="true" />
       <section className="dashboard-content">
         <div className="dashboard-column dashboard-column--left">
           <div className="dashboard-profile-card dashboard-panel">
             <img className="dashboard-profile-card__image" src={profileImage} alt="Moodboard quotidien" />
-            <button type="button" className="dashboard-add-card" onClick={handleAddCard}>
-              Ajouter une carte
-            </button>
           </div>
         </div>
 
@@ -253,7 +313,7 @@ const PlannerPage = () => {
             <span>Aujourd'hui</span>
             <time>{todayLabel}</time>
           </div>
-          <div className="dashboard-space-title">Mon espace d&rsquo;&eacute;quilibre</div>
+          <div className="dashboard-space-title">Mon espace d��quilibre</div>
           <div className="dashboard-card-grid">
             {cards.map((card) => (
               <button
@@ -303,14 +363,14 @@ const PlannerPage = () => {
         <aside className="dashboard-column dashboard-column--right">
           <div className="dashboard-upcoming dashboard-panel">
             <div className="dashboard-upcoming__header">
-              <span className="dashboard-upcoming__title">Prochaines t&acirc;ches</span>
+              <span className="dashboard-upcoming__title">Prochaines t�ches</span>
               <span className="dashboard-upcoming__subtitle">
                 Ton prochain focus, tout en douceur pastel.
               </span>
             </div>
             {upcomingTaskGroups.length === 0 ? (
               <div className="dashboard-upcoming__empty">
-                <span>Aucune &eacute;ch&eacute;ance &agrave; venir. Profite de ce calme.</span>
+                <span>Aucune �ch�ance � venir. Profite de ce calme.</span>
               </div>
             ) : (
               upcomingTaskGroups.map((group) => (
@@ -350,8 +410,7 @@ const PlannerPage = () => {
         <div className="vision-board__header">
           <h2 id="vision-board-title">Ta vision board</h2>
           <p>
-            Un espace dédié pour afficher ta vision en grand format. Remplace simplement l’image par
-            ta planche d’inspiration préférée.
+            Un espace d�di� pour afficher ta vision en grand format. Remplace simplement l�image par ta planche d�inspiration pr�f�r�e.
           </p>
         </div>
         <div className="vision-board__canvas">
@@ -363,3 +422,5 @@ const PlannerPage = () => {
 }
 
 export default PlannerPage
+
+

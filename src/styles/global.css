@@ -2134,7 +2134,6 @@ img {
 }
 
 .self-love-hero {
-.self-love-hero {
   position: relative;
   border-radius: 32px;
   padding: clamp(2.4rem, 5vw, 3.8rem);
@@ -2591,6 +2590,14 @@ img {
   margin: 0;
   font-size: clamp(2rem, 6vw, 3rem);
   color: #1f1a2f;
+}
+
+.self-love-certificate__subtitle {
+  margin: 0;
+  max-width: 520px;
+  color: rgba(30, 41, 59, 0.68);
+  font-size: 1.05rem;
+  line-height: 1.6;
 }
 
 .self-love-certificate__canvas {

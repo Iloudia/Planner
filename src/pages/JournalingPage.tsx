@@ -2,9 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import usePersistentState from '../hooks/usePersistentState'
 import journalingIllustration from '../assets/planner-09.jpg'
-import journalingMood01 from '../assets/planner-02.jpg'
-import journalingMood02 from '../assets/planner-05.jpg'
-import journalingMood03 from '../assets/planner-08.jpg'
 
 type JournalFeeling = 'happy' | 'pout' | 'angry' | 'tired'
 
@@ -70,12 +67,6 @@ const feelings: Array<{ value: JournalFeeling; label: string; emoji: string }> =
   { value: 'angry', label: 'En colere', emoji: '🔥' },
   { value: 'tired', label: 'Fatiguee', emoji: '🌙' },
 ]
-const journalingMoodboard = [
-  { src: journalingMood01, alt: 'Carnet ouvert sur une table pastel' },
-  { src: journalingMood02, alt: 'Crayons et fleurs sechees pour journaling' },
-  { src: journalingMood03, alt: 'Tasse de the et journal inspire' },
-] as const
-
 const DATE_PROMPT_FIELD_ID = 'prompt-date'
 
 const journalingPromptSections: JournalingPromptSection[] = [
@@ -443,13 +434,6 @@ const JournalingPage = () => {
         <div className="journaling-hero__visual">
           <div className="journaling-hero__visual-main">
             <img src={journalingIllustration} alt="Carnet pastel accompagne de fleurs sechees" />
-          </div>
-          <div className="journaling-hero__gallery" aria-hidden="true">
-            {journalingMoodboard.map((image, index) => (
-              <div key={image.src} className={`journaling-hero__photo journaling-hero__photo--${index + 1}`}>
-                <img src={image.src} alt={image.alt} />
-              </div>
-            ))}
           </div>
         </div>
       </section>

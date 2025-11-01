@@ -6,8 +6,9 @@
   { id: 'card-5', title: 'Revue du mois', path: '/revue-du-mois' },
   { id: 'card-6', title: 'Calendrier mensuel', path: '/calendrier-mensuel' },
   { id: 'card-7', title: 'Choses \u00e0 regarder', path: '/choses-a-regarder' },
-  { id: 'card-8', title: 'Sorties', path: '/sorties' },
+  { id: 'card-8', title: 'Wishlist', path: '/wishlist' },
   { id: 'card-9', title: 'Th\u00e9rapie', path: '/therapie' },
+  { id: 'card-10', title: 'S\'aimer soi-m\u00eame', path: '/self-love' },
 ] as const
 
 export const plannerCardRouteById = plannerCardRoutes.reduce<Record<string, string>>(

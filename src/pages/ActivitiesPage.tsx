@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import usePersistentState from '../hooks/usePersistentState'
 import activitiesMood01 from '../assets/planner-05.jpg'
@@ -23,16 +23,16 @@ type ActivityDraft = {
 }
 
 const statusLabels: Record<ActivityStatus, string> = {
-  'a-faire': 'A explorer',
-  planifie: 'Planifie',
-  fait: 'Realise',
+  'a-faire': 'À explorer',
+  'planifie': 'Planifié',
+  fait: 'Réalisé',
 }
 
 const categoryPalette = ['#C7D2FE', '#FBCFE8', '#FDE68A', '#BBF7D0', '#FECACA']
 
 const defaultActivities: Activity[] = [
   { id: 'act-1', title: 'Cours de poterie', category: 'Creativite', status: 'planifie', idealDate: '' },
-  { id: 'act-2', title: 'Randonnee au lever du soleil', category: 'Nature', status: 'a-faire', idealDate: '' },
+  { id: 'act-2', title: 'Randonnée au lever du soleil', category: 'Nature', status: 'a-faire', idealDate: '' },
   { id: 'act-3', title: 'Atelier photo', category: 'Creativite', status: 'fait', idealDate: '' },
 ]
 
@@ -105,9 +105,9 @@ const ActivitiesPage = () => {
 
       <section className="activities-hero dashboard-panel">
         <div className="activities-hero__content">
-          <span className="activities-hero__eyebrow">experiences a vivre</span>
-          <h1>Compose ta to-do plaisir et creative.</h1>
-          <p>Un espace pour consigner toutes les activites qui nourrissent ton energie.</p>
+          <span className="activities-hero__eyebrow">Choses à expérimenter</span>
+          <h1>Compose ta to-do plaisir et créative.</h1>
+          <p>Un espace pour rassembler les activités qui te font du bien et rechargent ton énergie.</p>
           <div className="activities-hero__stats">
             {activitiesStats.map((stat) => (
               <article key={stat.id}>
@@ -129,8 +129,8 @@ const ActivitiesPage = () => {
       <section className="activities-dashboard">
         <div className="activities-form dashboard-panel">
           <header className="activities-section-header">
-            <span className="activities-section-header__eyebrow">nouvelle idee</span>
-            <h2>Ajouter une activite</h2>
+            <span className="activities-section-header__eyebrow">nouvelle idée</span>
+            <h2>Ajouter une activité</h2>
           </header>
           <form onSubmit={handleSubmit}>
             <label>
@@ -144,7 +144,7 @@ const ActivitiesPage = () => {
               />
             </label>
             <label>
-              <span>Categorie</span>
+              <span>Catégorie</span>
               <input
                 type="text"
                 value={draft.category}
@@ -168,7 +168,7 @@ const ActivitiesPage = () => {
               </select>
             </label>
             <label>
-              <span>Date ideale</span>
+              <span>Date idéale</span>
               <input
                 type="date"
                 value={draft.idealDate}
@@ -176,7 +176,7 @@ const ActivitiesPage = () => {
               />
             </label>
             <button type="submit" className="activities-form__submit">
-              Ajouter a la liste
+              Ajouter à la liste
             </button>
           </form>
         </div>
@@ -186,7 +186,7 @@ const ActivitiesPage = () => {
             <article key={status} className="activities-column dashboard-panel">
               <header>
                 <h2>{statusLabels[status]}</h2>
-                <span>{items.length} idee(s)</span>
+                <span>{items.length} idée(s)</span>
               </header>
               <ul>
                 {items.map((activity, index) => (

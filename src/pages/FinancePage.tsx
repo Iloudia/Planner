@@ -1,4 +1,4 @@
-import type { FormEvent } from 'react'
+﻿import type { FormEvent } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import usePersistentState from '../hooks/usePersistentState'
 import financeMood01 from '../assets/planner-04.jpg'
@@ -53,6 +53,12 @@ type PieSegment = {
   color: string
 }
 
+type BalanceTimelinePoint = {
+  date: string
+  label: string
+  balance: number
+}
+
 const categoryDefinitions: Record<ExpenseCategory, { label: string; color: string }> = {
   food: { label: 'Courses et alimentation', color: '#FECACA' },
   housing: { label: 'Logement et charges', color: '#FBCFE8' },
@@ -65,10 +71,12 @@ const categoryDefinitions: Record<ExpenseCategory, { label: string; color: strin
 }
 
 const financeMoodboard = [
-  { src: financeMood01, alt: 'Moodboard budget pastel' },
-  { src: financeMood02, alt: 'Carnet d\'epargne inspire' },
+  { src: financeMood01, alt: 'Moodboard budget' },
+  { src: financeMood02, alt: 'Carnet d\'épargne inspiré' },
   { src: financeMood03, alt: 'Planification creative' },
 ] as const
+
+const financeInspirationImage = financeMoodboard[1]
 
 const euroFormatter = new Intl.NumberFormat('fr-FR', {
   style: 'currency',
@@ -84,13 +92,14 @@ const monthFormatter = new Intl.DateTimeFormat('fr-FR', {
   year: 'numeric',
 })
 
-const getTodayISO = () => {
-  const today = new Date()
-  const year = today.getFullYear()
-  const month = `${today.getMonth() + 1}`.padStart(2, '0')
-  const day = `${today.getDate()}`.padStart(2, '0')
+const formatDateToISO = (date: Date) => {
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
   return `${year}-${month}-${day}`
 }
+
+const getTodayISO = () => formatDateToISO(new Date())
 
 const getMonthKeyFromDate = (date: Date) => `${date.getFullYear()}-${`${date.getMonth() + 1}`.padStart(2, '0')}`
 
@@ -345,6 +354,42 @@ const FinancePage = () => {
   const pieBackground = useMemo(() => buildPieGradient(pieSegments), [pieSegments])
   const hasPieData = pieSegments.length > 0
 
+  const balanceTimeline = useMemo<BalanceTimelinePoint[]>(() => {
+    const monthStart = parseMonthKeyToDate(selectedMonthKey)
+    const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0)
+    const dailyChanges = new Map<string, number>()
+
+    selectedMonthEntries.forEach((entry) => {
+      const delta = entry.direction === 'in' ? entry.amount : -entry.amount
+      const existing = dailyChanges.get(entry.date) ?? 0
+      dailyChanges.set(entry.date, roundCurrency(existing + delta))
+    })
+
+    const points: BalanceTimelinePoint[] = []
+    let runningBalance = startingAmountValue
+
+    points.push({
+      date: formatDateToISO(monthStart),
+      label: 'Début',
+      balance: runningBalance,
+    })
+
+    for (let day = new Date(monthStart); day <= monthEnd; day.setDate(day.getDate() + 1)) {
+      const key = formatDateToISO(day)
+      const change = dailyChanges.get(key)
+      if (change) {
+        runningBalance = roundCurrency(runningBalance + change)
+      }
+      points.push({
+        date: key,
+        label: day.getDate().toString(),
+        balance: runningBalance,
+      })
+    }
+
+    return points
+  }, [selectedMonthEntries, selectedMonthKey, startingAmountValue])
+
   const [startingAmountDraft, setStartingAmountDraft] = useState(() =>
     selectedSnapshot?.startingAmount !== undefined ? selectedSnapshot.startingAmount.toString() : '',
   )
@@ -385,7 +430,7 @@ const FinancePage = () => {
     const trimmedLabel = draft.label.trim()
     const nextEntry: StoredFinanceEntry = {
       id: `finance-${Date.now()}`,
-      label: trimmedLabel.length > 0 ? trimmedLabel : draft.direction === 'in' ? 'Revenus' : 'Depense',
+      label: trimmedLabel.length > 0 ? trimmedLabel : draft.direction === 'in' ? 'Revenus' : 'Dépense',
       amount: roundCurrency(amountValue),
       date: draft.date,
       direction: draft.direction,
@@ -440,11 +485,11 @@ const FinancePage = () => {
       <section className="finance-hero dashboard-panel">
         <div className="finance-hero__content">
           <span className="finance-hero__eyebrow">tableau finances</span>
-          <h1>Mon panorama budget pastel</h1>
+          <h1>Mon panorama budget</h1>
 
           <div className="finance-hero__stats">
             <article>
-              <span>Total depenses du mois</span>
+              <span>Total dépenses du mois</span>
               <strong>{euroFormatter.format(totalSpent)}</strong>
             </article>
             <article>
@@ -488,10 +533,10 @@ const FinancePage = () => {
         <div className="finance-dashboard__main">
           <section className="finance-summary dashboard-panel">
             <header className="finance-section-header">
-              <span className="finance-section-header__eyebrow">couleurs de depenses</span>
+              <span className="finance-section-header__eyebrow">couleurs de dépenses</span>
               <div>
-                <h2>Repartition par categorie</h2>
-                <p>Visualise ou part ton energie financiere avec une palette ultra douce.</p>
+                <h2>Répartition par catégorie</h2>
+                <p>Visualise où part ton énergie financière avec une palette ultra douce.</p>
               </div>
             </header>
             <div className="finance-summary__grid">
@@ -514,11 +559,11 @@ const FinancePage = () => {
           {savingsIdea && (
             <section className="finance-tip dashboard-panel">
               <header className="finance-section-header">
-                <span className="finance-section-header__eyebrow">idee douceur</span>
-                <h2>Astuce epargne</h2>
+                <span className="finance-section-header__eyebrow">idée douceur</span>
+                <h2>Astuce épargne</h2>
               </header>
               <p>
-                En visant {euroFormatter.format(savingsIdea.target)} pour {savingsIdea.label}, tu economises{' '}
+                En visant {euroFormatter.format(savingsIdea.target)} pour {savingsIdea.label}, tu économises{' '}
                 {euroFormatter.format(savingsIdea.current - savingsIdea.target)} ce mois-ci.
               </p>
             </section>
@@ -527,7 +572,7 @@ const FinancePage = () => {
           <section className="finance-form dashboard-panel">
             <header className="finance-section-header">
               <span className="finance-section-header__eyebrow">ajoute ton mouvement</span>
-              <h2>Ajouter une depense</h2>
+              <h2>Ajouter une dépense</h2>
             </header>
             <form onSubmit={handleSubmit} className="finance-form__grid">
               <label className="finance-form__field">
@@ -555,7 +600,7 @@ const FinancePage = () => {
                   value={draft.direction}
                   onChange={(event) => handleDraftChange('direction', event.target.value as FlowDirection)}
                 >
-                  <option value="out">Depense</option>
+                  <option value="out">Dépense</option>
                   <option value="in">Revenus</option>
                 </select>
               </label>
@@ -588,6 +633,10 @@ const FinancePage = () => {
               </button>
             </form>
           </section>
+
+          <section className="finance-inspiration dashboard-panel">
+            <img src={financeInspirationImage.src} alt={financeInspirationImage.alt} />
+          </section>
         </div>
 
         <aside className="finance-dashboard__aside">
@@ -601,7 +650,7 @@ const FinancePage = () => {
             </header>
             <form className="finance-balance__form" onSubmit={handleStartingAmountSubmit}>
               <label className="finance-balance__field">
-                <span>Argent au debut du mois</span>
+                <span>Argent au début du mois</span>
                 <input
                   type="text"
                   value={startingAmountDraft}
@@ -615,7 +664,7 @@ const FinancePage = () => {
             </form>
             <div className="finance-balance__stats">
               <article className="finance-balance__stat">
-                <span>Argent au debut</span>
+                <span>Argent au début</span>
                 <strong>{euroFormatter.format(startingAmountValue)}</strong>
               </article>
               <article className="finance-balance__stat">
@@ -623,11 +672,11 @@ const FinancePage = () => {
                 <strong>{formatSignedCurrency(totalIncome)}</strong>
               </article>
               <article className="finance-balance__stat">
-                <span>Depenses</span>
+                <span>Dépenses</span>
                 <strong>{formatSignedCurrency(-totalSpent)}</strong>
               </article>
               <article className="finance-balance__stat">
-                <span>Argent a la fin</span>
+                <span>Argent à la fin</span>
                 <strong>{euroFormatter.format(endingAmount)}</strong>
                 <small>
                   Economies: {formatSignedCurrency(savedAmount)} ({formatSignedPercentage(savingsPercentage)})
@@ -651,13 +700,13 @@ const FinancePage = () => {
                     </ul>
                   </div>
                 ) : (
-                  <p className="finance-balance__empty">Ajoute une depense pour visualiser la repartition.</p>
+                  <p className="finance-balance__empty">Ajoute une dépense pour visualiser la répartition.</p>
                 )}
               </div>
               <div className="finance-balance__chart-card">
-                <h3>Diagramme en tube</h3>
-                <BalanceBarChart start={startingAmountValue} end={endingAmount} />
-                <p className="finance-bars__caption">Variation nette: {formatSignedCurrency(netCashflow)}</p>
+                <h3>Diagramme en lignes</h3>
+                <BalanceLineChart points={balanceTimeline} />
+                <p className="finance-line-chart__caption">Variation nette: {formatSignedCurrency(netCashflow)}</p>
               </div>
             </div>
           </section>
@@ -666,11 +715,11 @@ const FinancePage = () => {
 
       <section className="finance-history dashboard-panel">
         <header className="finance-section-header">
-          <span className="finance-section-header__eyebrow">memoire du mois</span>
+          <span className="finance-section-header__eyebrow">mémoire du mois</span>
           <h2>Historique du mois</h2>
         </header>
         {selectedMonthEntries.length === 0 ? (
-          <p className="finance-history__empty">Aucun mouvement enregistre pour {selectedMonthLabel}.</p>
+          <p className="finance-history__empty">Aucun mouvement enregistré pour {selectedMonthLabel}.</p>
         ) : (
           <>
             <ul className="finance-history__list">
@@ -678,7 +727,7 @@ const FinancePage = () => {
                 const definition = entry.category ? categoryDefinitions[entry.category] : undefined
                 const amountValue = entry.direction === 'out' ? -entry.amount : entry.amount
                 const amountColor = entry.direction === 'in' ? '#16a34a' : definition?.color ?? '#1e1b4b'
-                const categoryLabel = entry.direction === 'in' ? 'Revenus' : definition?.label ?? 'Depense'
+                const categoryLabel = entry.direction === 'in' ? 'Revenus' : definition?.label ?? 'Dépense'
                 return (
                   <li key={entry.id} className="finance-history__item">
                     <div className="finance-history__meta">
@@ -711,38 +760,89 @@ const FinancePage = () => {
   )
 }
 
-type BalanceBarChartProps = {
-  start: number
-  end: number
+type BalanceLineChartProps = {
+  points: BalanceTimelinePoint[]
 }
 
-const BalanceBarChart = ({ start, end }: BalanceBarChartProps) => {
-  const maxValue = Math.max(Math.abs(start), Math.abs(end), 1)
-  const baseHeight = 8
-  const startHeight = Math.max(baseHeight, Math.round((Math.abs(start) / maxValue) * 100))
-  const endHeight = Math.max(baseHeight, Math.round((Math.abs(end) / maxValue) * 100))
-
-  const startClasses = ['finance-bars__bar', 'finance-bars__bar--start']
-  if (start < 0) {
-    startClasses.push('finance-bars__bar--negative')
+const BalanceLineChart = ({ points }: BalanceLineChartProps) => {
+  if (points.length === 0) {
+    return <div className="finance-line-chart finance-line-chart--empty">Pas de données disponibles</div>
   }
 
-  const endClasses = ['finance-bars__bar', 'finance-bars__bar--end']
-  if (end < 0) {
-    endClasses.push('finance-bars__bar--negative')
-  }
+  const values = points.map((point) => point.balance)
+  const minValue = Math.min(...values)
+  const maxValue = Math.max(...values)
+  const rawRange = maxValue - minValue
+  const safeRange = rawRange === 0 ? 1 : rawRange
+  const verticalPadding = 12
+  const horizontalStep = points.length > 1 ? 100 / (points.length - 1) : 0
+
+  const coordinates = points.map((point, index) => {
+    const x = points.length === 1 ? 50 : index * horizontalStep
+    const y =
+      rawRange === 0
+        ? 50
+        : verticalPadding + ((maxValue - point.balance) / safeRange) * (100 - verticalPadding * 2)
+    return { x, y, point }
+  })
+
+  const firstX = coordinates[0]?.x ?? 0
+  const lastX = coordinates[coordinates.length - 1]?.x ?? firstX
+  const polylinePoints = coordinates.map(({ x, y }) => `${x},${y}`).join(' ')
+  const areaPoints = [`${firstX},100`, ...coordinates.map(({ x, y }) => `${x},${y}`), `${lastX},100`].join(' ')
+
+  const yTicks =
+    rawRange === 0
+      ? [{ value: maxValue, position: 50 }]
+      : Array.from({ length: 5 }, (_, index) => {
+          const value = maxValue - (index / 4) * rawRange
+          const position =
+            verticalPadding + ((maxValue - value) / safeRange) * (100 - verticalPadding * 2)
+          return { value, position }
+        })
+
+  const labelStep = points.length > 1 ? Math.ceil(points.length / 6) : 1
 
   return (
-    <div className="finance-bars">
-      <div className="finance-bars__item">
-        <div className={startClasses.join(' ')} style={{ height: `${startHeight}%` }} />
-        <span>Debut</span>
-        <strong>{euroFormatter.format(start)}</strong>
+    <div className="finance-line-chart">
+      <div className="finance-line-chart__canvas">
+        <svg className="finance-line-chart__svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+          {yTicks.map((tick, index) => (
+            <line
+              key={`grid-${index}`}
+              className="finance-line-chart__grid-line"
+              x1="0"
+              x2="100"
+              y1={tick.position}
+              y2={tick.position}
+            />
+          ))}
+          <polygon className="finance-line-chart__area" points={areaPoints} />
+          <polyline className="finance-line-chart__line" points={polylinePoints} />
+          {coordinates.map(({ x, y, point }) => (
+            <circle key={point.date} className="finance-line-chart__dot" cx={x} cy={y} r="1.6" />
+          ))}
+        </svg>
+        <div className="finance-line-chart__y-labels">
+          {yTicks.map((tick, index) => (
+            <span key={`label-${index}`} style={{ top: `${tick.position}%` }}>
+              {euroFormatter.format(roundCurrency(tick.value))}
+            </span>
+          ))}
+        </div>
       </div>
-      <div className="finance-bars__item">
-        <div className={endClasses.join(' ')} style={{ height: `${endHeight}%` }} />
-        <span>Fin</span>
-        <strong>{euroFormatter.format(end)}</strong>
+      <div className="finance-line-chart__x-labels">
+        {coordinates.map(({ x, point }, index) => {
+          if (index !== 0 && index !== coordinates.length - 1 && index % labelStep !== 0) {
+            return null
+          }
+          const label = index === 0 ? 'Début' : index === coordinates.length - 1 ? 'Fin' : point.label
+          return (
+            <span key={point.date} style={{ left: `${x}%` }}>
+              {label}
+            </span>
+          )
+        })}
       </div>
     </div>
   )
