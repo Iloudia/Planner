@@ -9,6 +9,7 @@
   { id: 'card-8', title: 'Wishlist', path: '/wishlist' },
   { id: 'card-9', title: 'Th\u00e9rapie', path: '/therapie' },
   { id: 'card-10', title: 'S\'aimer soi-m\u00eame', path: '/self-love' },
+  { id: 'card-11', title: 'Sport', path: '/sport' },
 ] as const
 
 export const plannerCardRouteById = plannerCardRoutes.reduce<Record<string, string>>(

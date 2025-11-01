@@ -10,6 +10,7 @@ import TherapyPage from './pages/TherapyPage'
 import WatchlistPage from './pages/WatchlistPage'
 import PlannerPage from './pages/PlannerPage'
 import SelfLovePage from './pages/SelfLovePage'
+import SportPage from './pages/SportPage'
 import BackButton from './components/BackButton'
 import logo1 from './assets/Logo1.png'
 import { TasksProvider } from './context/TasksContext'
@@ -48,6 +49,7 @@ const App = () => {
             <Route path="/sorties" element={<WishlistPage />} />
             <Route path="/therapie" element={<TherapyPage />} />
             <Route path="/self-love" element={<SelfLovePage />} />
+            <Route path="/sport" element={<SportPage />} />
           </Routes>
         </main>
 
